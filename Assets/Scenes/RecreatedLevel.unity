@@ -40278,6 +40278,62 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1313252668
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1313252669}
+  - component: {fileID: 1313252670}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1313252669
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1313252668}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1313252670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1313252668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bbe7b2a8567646b4ab8478d89b80e34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  intro: {fileID: 8300000, guid: 41ef3a68cc33f4385b93b26920ab44b5, type: 3}
+  startScene: {fileID: 8300000, guid: efae2025e846747449a71546868dcc23, type: 3}
+  ghostNormal: {fileID: 8300000, guid: f0a86d36eb311439e9147bc840226bf3, type: 3}
+  ghostScared: {fileID: 8300000, guid: 7f60abe045a3c4a62b3b67a0d577db02, type: 3}
+  ghostDead: {fileID: 8300000, guid: 17cbdc276fffb4e55882605fe2c2189c, type: 3}
+  pacStudentMove: {fileID: 8300000, guid: e182a48a45e6c42e8aaeceb6fd3cd855, type: 3}
+  pelletEat: {fileID: 8300000, guid: 5253da131e0f04e4d86a97bf9dce6591, type: 3}
+  ghostEat: {fileID: 8300000, guid: ea76b474876cf4aeb88b9e2982f98172, type: 3}
+  bonusEat: {fileID: 8300000, guid: 56f039783bf674830bc54412caef2f30, type: 3}
+  wallHit: {fileID: 8300000, guid: d2ac8fd0228d641e3bc1bf0c3f2b894d, type: 3}
+  pacStudentDeath: {fileID: 8300000, guid: c045c43027232476e8eac3cdf15a5480, type: 3}
+  isStartScene: 0
 --- !u!1 &1314697335
 GameObject:
   m_ObjectHideFlags: 0
@@ -64696,3 +64752,4 @@ SceneRoots:
   - {fileID: 162060090}
   - {fileID: 820134863}
   - {fileID: 1210432707}
+  - {fileID: 1313252669}
