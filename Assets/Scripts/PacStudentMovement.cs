@@ -53,7 +53,6 @@ public class PacStudentMovement : MonoBehaviour
 
         t = Mathf.Clamp01(t);
 
-        // Programmatic linear tween
         transform.position =
             startPosition + (endPosition - startPosition) * t;
 
@@ -74,10 +73,8 @@ public class PacStudentMovement : MonoBehaviour
 
         endPosition = points[nextPoint].position;
 
-        // Work out movement direction
         Vector3 direction = endPosition - startPosition;
 
-        // Change animation immediately when turning
         if (animator != null)
         {
             if (direction.x > 0)
@@ -98,7 +95,7 @@ public class PacStudentMovement : MonoBehaviour
             }
         }
 
-        // Keep the same movement speed on every side
+        //Keep the same speed on 4 side
         journeyLength = Vector3.Distance(startPosition, endPosition);
         journeyTime = journeyLength / speed;
 

@@ -48,12 +48,11 @@ public class AudioManager : MonoBehaviour
 
     void Awake()
     {
-        // Create the AudioSources automatically
+        //Create the AudioSources
         musicSource = gameObject.AddComponent<AudioSource>();
         movementSource = gameObject.AddComponent<AudioSource>();
         sfxSource = gameObject.AddComponent<AudioSource>();
 
-        // 2D audio
         musicSource.spatialBlend = 0f;
         movementSource.spatialBlend = 0f;
         sfxSource.spatialBlend = 0f;
@@ -74,7 +73,7 @@ public class AudioManager : MonoBehaviour
 
     void Update()
     {
-        // Intro finishes OR 3 seconds pass
+        //Intro music plays for 3 seconds
         if (!isStartScene && !introFinished)
         {
             introTimer += Time.deltaTime;
@@ -86,10 +85,6 @@ public class AudioManager : MonoBehaviour
             }
         }
     }
-
-    // =========================
-    // Music
-    // =========================
 
     private void PlayIntro()
     {
@@ -140,10 +135,6 @@ public class AudioManager : MonoBehaviour
         musicSource.Play();
     }
 
-    // =========================
-    // PacStudent movement sound
-    // =========================
-
     public void PlayMovement()
     {
         if (pacStudentMove == null)
@@ -159,10 +150,6 @@ public class AudioManager : MonoBehaviour
     {
         movementSource.Stop();
     }
-
-    // =========================
-    // SFX
-    // =========================
 
     public void PlayPelletEat()
     {
