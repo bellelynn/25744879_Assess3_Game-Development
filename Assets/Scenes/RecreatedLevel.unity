@@ -20850,7 +20850,7 @@ Transform:
   m_GameObject: {fileID: 632488150}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: -1, z: 0}
+  m_LocalPosition: {x: -1, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -40333,6 +40333,12 @@ MonoBehaviour:
   bonusEat: {fileID: 8300000, guid: 56f039783bf674830bc54412caef2f30, type: 3}
   wallHit: {fileID: 8300000, guid: d2ac8fd0228d641e3bc1bf0c3f2b894d, type: 3}
   pacStudentDeath: {fileID: 8300000, guid: c045c43027232476e8eac3cdf15a5480, type: 3}
+  introVolume: 0.4
+  normalVolume: 0.2
+  scaredVolume: 0.3
+  deadVolume: 0.3
+  movementVolume: 0.5
+  sfxVolume: 0.5
   isStartScene: 0
 --- !u!1 &1314697335
 GameObject:
