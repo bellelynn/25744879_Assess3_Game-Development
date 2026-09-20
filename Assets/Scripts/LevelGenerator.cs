@@ -21,7 +21,7 @@ public class LevelGenerator : MonoBehaviour
     private GameObject generatedLevel;
     private int[,] fullMap;
 
-    // Top-left quadrant
+    //Top-left 
     private int[,] levelMap =
     {
         {1,2,2,2,2,2,2,2,2,2,2,2,2,7},
@@ -43,7 +43,7 @@ public class LevelGenerator : MonoBehaviour
 
     void Start()
     {
-        // Remove manual level in Play mode
+        //Remove manual level in Play mode
         if (manualLevel != null)
         {
             manualLevel.SetActive(false);
@@ -80,11 +80,11 @@ public class LevelGenerator : MonoBehaviour
                 int mirrorColumn =
                     fullColumns - 1 - column;
 
-                // Top quadrants
+                //Top quadrants
                 fullMap[row, column] = tileType;
                 fullMap[row, mirrorColumn] = tileType;
 
-                // Avoid duplicating the middle row
+                //Avoid duplicating the middle row
                 if (row < sourceRows - 1)
                 {
                     int mirrorRow =
@@ -184,7 +184,7 @@ public class LevelGenerator : MonoBehaviour
         }
     }
 
-    // Check whether a grid position is open
+    //Check whether a grid position is open
     bool IsOpen(int row, int column)
     {
         if (row < 0 ||
@@ -481,7 +481,7 @@ public class LevelGenerator : MonoBehaviour
         bool openRight =
             IsOpen(row, column + 1);
 
-        // Default corner is ┌
+        //Default corner is ┌
         if (openUp && openLeft)
         {
             return 0f;
@@ -642,7 +642,7 @@ public class LevelGenerator : MonoBehaviour
         bool openRight =
             IsOpen(row, column + 1);
 
-        // Default T junction is ┬
+        //Default T junction is ┬
         if (openUp)
         {
             return 0f;
