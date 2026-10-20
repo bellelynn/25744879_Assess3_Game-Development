@@ -67,7 +67,6 @@ public class AudioManager : MonoBehaviour
         else
         {
             PlayIntro();
-            PlayMovement();
         }
     }
 
