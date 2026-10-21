@@ -186,6 +186,23 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &114198326
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1132392929}
+  - component: {fileID: 1126498957}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &158821741
 GameObject:
   m_ObjectHideFlags: 0
@@ -1433,6 +1450,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 993309349}
   m_CullTransparentMesh: 1
+--- !u!114 &1126498957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114198326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bbe7b2a8567646b4ab8478d89b80e34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  intro: {fileID: 8300000, guid: 41ef3a68cc33f4385b93b26920ab44b5, type: 3}
+  startScene: {fileID: 8300000, guid: efae2025e846747449a71546868dcc23, type: 3}
+  ghostNormal: {fileID: 8300000, guid: f0a86d36eb311439e9147bc840226bf3, type: 3}
+  ghostScared: {fileID: 8300000, guid: 7f60abe045a3c4a62b3b67a0d577db02, type: 3}
+  ghostDead: {fileID: 8300000, guid: 17cbdc276fffb4e55882605fe2c2189c, type: 3}
+  pacStudentMove: {fileID: 8300000, guid: e182a48a45e6c42e8aaeceb6fd3cd855, type: 3}
+  pelletEat: {fileID: 8300000, guid: 5253da131e0f04e4d86a97bf9dce6591, type: 3}
+  ghostEat: {fileID: 8300000, guid: ea76b474876cf4aeb88b9e2982f98172, type: 3}
+  bonusEat: {fileID: 8300000, guid: 56f039783bf674830bc54412caef2f30, type: 3}
+  wallHit: {fileID: 8300000, guid: d2ac8fd0228d641e3bc1bf0c3f2b894d, type: 3}
+  pacStudentDeath: {fileID: 8300000, guid: c045c43027232476e8eac3cdf15a5480, type: 3}
+  introVolume: 0.4
+  normalVolume: 0.2
+  scaredVolume: 0.3
+  deadVolume: 0.3
+  movementVolume: 0.5
+  sfxVolume: 0.5
+  isStartScene: 1
+--- !u!4 &1132392929
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114198326}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1192850006
 GameObject:
   m_ObjectHideFlags: 0
@@ -2349,6 +2411,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1753948304}
+  - component: {fileID: 1753948305}
   m_Layer: 5
   m_Name: Border
   m_TagString: Untagged
@@ -2379,68 +2442,28 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -60, y: -60}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &114198326
-GameObject:
+--- !u!95 &1753948305
+Animator:
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1132392929}
-  - component: {fileID: 1126498957}
-  m_Layer: 0
-  m_Name: AudioManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1132392929
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 114198326}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1126498957
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 114198326}
+  m_GameObject: {fileID: 1753948303}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8bbe7b2a8567646b4ab8478d89b80e34, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  intro: {fileID: 8300000, guid: 41ef3a68cc33f4385b93b26920ab44b5, type: 3}
-  startScene: {fileID: 8300000, guid: efae2025e846747449a71546868dcc23, type: 3}
-  ghostNormal: {fileID: 8300000, guid: f0a86d36eb311439e9147bc840226bf3, type: 3}
-  ghostScared: {fileID: 8300000, guid: 7f60abe045a3c4a62b3b67a0d577db02, type: 3}
-  ghostDead: {fileID: 8300000, guid: 17cbdc276fffb4e55882605fe2c2189c, type: 3}
-  pacStudentMove: {fileID: 8300000, guid: e182a48a45e6c42e8aaeceb6fd3cd855, type: 3}
-  pelletEat: {fileID: 8300000, guid: 5253da131e0f04e4d86a97bf9dce6591, type: 3}
-  ghostEat: {fileID: 8300000, guid: ea76b474876cf4aeb88b9e2982f98172, type: 3}
-  bonusEat: {fileID: 8300000, guid: 56f039783bf674830bc54412caef2f30, type: 3}
-  wallHit: {fileID: 8300000, guid: d2ac8fd0228d641e3bc1bf0c3f2b894d, type: 3}
-  pacStudentDeath: {fileID: 8300000, guid: c045c43027232476e8eac3cdf15a5480, type: 3}
-  introVolume: 0.4
-  normalVolume: 0.2
-  scaredVolume: 0.3
-  deadVolume: 0.3
-  movementVolume: 0.5
-  sfxVolume: 0.5
-  isStartScene: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 032fc87605bdd418e91d991bc23df156, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
