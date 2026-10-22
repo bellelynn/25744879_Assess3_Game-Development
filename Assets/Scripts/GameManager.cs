@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private HUDManager hud;
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private LevelGenerator levelGenerator;
+    [SerializeField] private GhostController[] ghosts;
+    [SerializeField] private float scaredDuration = 10f;
+    [SerializeField] private float recoveringTime = 3f;
 
     public GameState State { get; private set; } = GameState.Countdown;
 
@@ -15,6 +18,7 @@ public class GameManager : MonoBehaviour
     private int score;
     private int lives = 3;
     private int pelletsLeft;
+    private float scaredTimer;
 
     void Start()
     {
@@ -40,6 +44,54 @@ public class GameManager : MonoBehaviour
 
         gameTime += Time.deltaTime;
         hud.SetTime(gameTime);
+
+        UpdateScaredTimer();
+    }
+
+    private void UpdateScaredTimer()
+    {
+        if (scaredTimer <= 0f)
+            return;
+
+        float previous = scaredTimer;
+        scaredTimer -= Time.deltaTime;
+
+        // 3 seconds left: scared ghosts start recovering
+        if (previous > recoveringTime && scaredTimer <= recoveringTime)
+            SetLivingGhosts(GhostController.GhostState.Recovering);
+
+        // Timer finished: back to normal (dead ghosts are not changed)
+        if (scaredTimer <= 0f)
+        {
+            scaredTimer = 0f;
+            SetLivingGhosts(GhostController.GhostState.Normal);
+            UpdateMusic();
+        }
+
+        hud.SetScaredTimer(scaredTimer);
+    }
+
+    private void SetLivingGhosts(GhostController.GhostState state)
+    {
+        foreach (GhostController ghost in ghosts)
+            if (ghost.State != GhostController.GhostState.Dead)
+                ghost.SetState(state);
+    }
+
+    // Dead music if any ghost is dead, otherwise scared music while the timer runs, otherwise normal
+    private void UpdateMusic()
+    {
+        foreach (GhostController ghost in ghosts)
+            if (ghost.State == GhostController.GhostState.Dead)
+            {
+                audioManager.PlayGhostDead();
+                return;
+            }
+
+        if (scaredTimer > 0f)
+            audioManager.PlayGhostScared();
+        else
+            audioManager.PlayGhostNormal();
     }
 
     public void AddScore(int amount)
@@ -52,6 +104,17 @@ public class GameManager : MonoBehaviour
     {
         AddScore(10);
         pelletsLeft--;
+    }
+
+    public void EatPowerPellet()
+    {
+        AddScore(50);
+        pelletsLeft--;
+
+        scaredTimer = scaredDuration;
+        SetLivingGhosts(GhostController.GhostState.Scared);
+        hud.SetScaredTimer(scaredTimer);
+        UpdateMusic();
     }
 
     public void EatCherry()

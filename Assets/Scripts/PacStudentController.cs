@@ -180,6 +180,13 @@ public class PacStudentController : MonoBehaviour
             Destroy(other.gameObject);
             gameManager.EatPellet();
         }
+        else if (other.CompareTag("PowerPellet"))
+        {
+            Vector3 p = other.transform.position;
+            levelGenerator.ClearTile(Mathf.RoundToInt(-p.y), Mathf.RoundToInt(p.x));
+            Destroy(other.gameObject);
+            gameManager.EatPowerPellet();
+        }
         else if (other.CompareTag("Cherry"))
         {
             Destroy(other.gameObject);

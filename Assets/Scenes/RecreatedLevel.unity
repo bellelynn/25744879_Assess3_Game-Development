@@ -997,6 +997,7 @@ GameObject:
   - component: {fileID: 25020776}
   - component: {fileID: 1898721355}
   - component: {fileID: 132456042}
+  - component: {fileID: 435009985}
   m_Layer: 0
   m_Name: Ghost_Green
   m_TagString: Ghost
@@ -11889,6 +11890,7 @@ GameObject:
   - component: {fileID: 373710222}
   - component: {fileID: 1272896658}
   - component: {fileID: 1783753800}
+  - component: {fileID: 1285241655}
   m_Layer: 0
   m_Name: Ghost_Purple
   m_TagString: Ghost
@@ -23669,6 +23671,7 @@ GameObject:
   - component: {fileID: 726551076}
   - component: {fileID: 745121845}
   - component: {fileID: 2027801791}
+  - component: {fileID: 879421593}
   m_Layer: 0
   m_Name: Ghost_Red
   m_TagString: Ghost
@@ -60128,6 +60131,7 @@ GameObject:
   - component: {fileID: 1750632285}
   - component: {fileID: 1673717083}
   - component: {fileID: 1114309804}
+  - component: {fileID: 898519639}
   m_Layer: 0
   m_Name: Ghost_Blue
   m_TagString: Ghost
@@ -68090,6 +68094,13 @@ MonoBehaviour:
   hud: {fileID: 1793256161}
   audioManager: {fileID: 1313252670}
   levelGenerator: {fileID: 1776525213}
+  ghosts:
+  - {fileID: 898519639}
+  - {fileID: 435009985}
+  - {fileID: 879421593}
+  - {fileID: 1285241655}
+  scaredDuration: 10
+  recoveringTime: 3
 --- !u!1 &2019389389
 GameObject:
   m_ObjectHideFlags: 0
@@ -76697,6 +76708,62 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &898519639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1750632281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5aea0b456e645189b3231f879b8d97a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GhostController
+  ghostNumber: 1
+  colourName: Blue
+--- !u!114 &435009985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 25020774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5aea0b456e645189b3231f879b8d97a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GhostController
+  ghostNumber: 2
+  colourName: Green
+--- !u!114 &879421593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 726551074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5aea0b456e645189b3231f879b8d97a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GhostController
+  ghostNumber: 3
+  colourName: Red
+--- !u!114 &1285241655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 373710220}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5aea0b456e645189b3231f879b8d97a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GhostController
+  ghostNumber: 4
+  colourName: Purple
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
