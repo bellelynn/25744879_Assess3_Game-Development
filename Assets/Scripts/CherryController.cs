@@ -6,7 +6,7 @@ public class CherryController : MonoBehaviour
     [SerializeField] private GameObject cherryPrefab;
     [SerializeField] private LevelGenerator levelGenerator;
     [SerializeField] private float spawnDelay = 5f;
-    [SerializeField] private float speed = 5f;   // units per second
+    [SerializeField] private float speed = 2.5f;   // units per second
 
     void Start()
     {

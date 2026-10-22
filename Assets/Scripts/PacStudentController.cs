@@ -5,6 +5,9 @@ public class PacStudentController : MonoBehaviour
     [SerializeField] private LevelGenerator levelGenerator;
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private ParticleSystem dustEffect;
+    [SerializeField] private ParticleSystem wallBumpEffect;
+    [SerializeField] private ParticleSystem deathEffect;
+    [SerializeField] private GameManager gameManager;
     [SerializeField] private float speed = 5f;   // tiles per second
 
     private Vector2Int lastInput = Vector2Int.zero;
@@ -16,6 +19,7 @@ public class PacStudentController : MonoBehaviour
     private Vector3 startPos;
     private Vector3 targetPos;
     private float lerpProgress;
+    private Vector3 spawnPosition;
 
     void Start()
     {
@@ -26,6 +30,7 @@ public class PacStudentController : MonoBehaviour
             Mathf.Round(transform.position.x),
             Mathf.Round(transform.position.y),
             0f);
+        spawnPosition = transform.position;
 
         animator.Play("Right");
         animator.speed = 0f;
@@ -33,6 +38,9 @@ public class PacStudentController : MonoBehaviour
 
     void Update()
     {
+        if (gameManager.State != GameManager.GameState.Playing)
+            return; 
+            
         ReadInput();
 
         if (isLerping)
@@ -90,14 +98,43 @@ public class PacStudentController : MonoBehaviour
             Mathf.RoundToInt(-transform.position.y));
     }
 
+    // Walking off the left/right edge of a tunnel row wraps to the other side
+    private bool IsTeleport(Vector2Int direction, out Vector3 exitPos)
+    {
+        exitPos = Vector3.zero;
+
+        if (direction.y != 0)
+            return false;
+
+        Vector2Int cell = CurrentCell();
+        int nextColumn = cell.x + direction.x;
+
+        if (nextColumn >= 0 && nextColumn < levelGenerator.Columns)
+            return false;
+
+        int otherColumn = nextColumn < 0 ? levelGenerator.Columns - 1 : 0;
+
+        if (!levelGenerator.IsWalkable(cell.y, otherColumn))
+            return false;
+
+        exitPos = new Vector3(otherColumn, -cell.y, 0f);
+        return true;
+    }
+
     private bool CanMove(Vector2Int direction)
     {
+        if (IsTeleport(direction, out _))
+            return true;
+
         Vector2Int cell = CurrentCell();
         return levelGenerator.IsWalkable(cell.y - direction.y, cell.x + direction.x);
     }
 
     private void StartLerp(Vector2Int direction)
     {
+        if (IsTeleport(direction, out Vector3 exitPos))
+            transform.position = exitPos;
+
         startPos = transform.position;
         targetPos = startPos + new Vector3(direction.x, direction.y, 0f);
         lerpProgress = 0f;
@@ -124,6 +161,7 @@ public class PacStudentController : MonoBehaviour
             return;
 
         isMoving = false;
+        PlayWallBump();
         animator.speed = 0f;
 
         if (audioManager != null)
@@ -131,6 +169,108 @@ public class PacStudentController : MonoBehaviour
 
         if (dustEffect != null)
             dustEffect.Stop();
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (gameManager.State != GameManager.GameState.Playing)
+            return;
+
+        if (other.CompareTag("Pellet"))
+        {
+            Vector3 p = other.transform.position;
+            levelGenerator.ClearTile(Mathf.RoundToInt(-p.y), Mathf.RoundToInt(p.x));
+            Destroy(other.gameObject);
+            gameManager.EatPellet();
+        }
+        else if (other.CompareTag("PowerPellet"))
+        {
+            Vector3 p = other.transform.position;
+            levelGenerator.ClearTile(Mathf.RoundToInt(-p.y), Mathf.RoundToInt(p.x));
+            Destroy(other.gameObject);
+            gameManager.EatPowerPellet();
+        }
+        else if (other.CompareTag("Ghost"))
+        {
+            GhostController ghost = other.GetComponent<GhostController>();
+
+            if (ghost == null || ghost.State == GhostController.GhostState.Dead)
+                return;
+
+            if (ghost.State == GhostController.GhostState.Normal)
+                gameManager.PacStudentCaught();
+            else
+                gameManager.EatGhost(ghost);
+        }
+        else if (other.CompareTag("Cherry"))
+        {
+            Destroy(other.gameObject);
+            gameManager.EatCherry();
+        }
+    }
+
+    public void Die()
+    {
+        isLerping = false;
+        isMoving = false;
+
+        animator.speed = 1f;
+        animator.Play("Dead");
+
+        if (dustEffect != null)
+            dustEffect.Stop();
+
+        if (deathEffect != null)
+        {
+            deathEffect.transform.position = transform.position;
+            deathEffect.Play();
+        }
+
+        if (audioManager != null)
+        {
+            audioManager.StopMovement();
+            audioManager.PlayPacStudentDeath();
+        }
+    }
+
+    // Stop everything in place for Game Over
+    public void Freeze()
+    {
+        isLerping = false;
+        isMoving = false;
+        animator.speed = 0f;
+
+        if (dustEffect != null)
+            dustEffect.Stop();
+
+        if (audioManager != null)
+            audioManager.StopMovement();
+    }
+
+    // Back to the top-left start, facing right and waiting for new input
+    public void Respawn()
+    {
+        transform.position = spawnPosition;
+        lastInput = Vector2Int.zero;
+        currentInput = Vector2Int.zero;
+
+        animator.Play("Right");
+        animator.speed = 0f;
+    }
+
+    private void PlayWallBump()
+    {
+        // Point of contact: half a tile ahead in the blocked direction
+        Vector3 contact = transform.position + new Vector3(currentInput.x, currentInput.y, 0f) * 0.5f;
+
+        if (wallBumpEffect != null)
+        {
+            wallBumpEffect.transform.position = contact;
+            wallBumpEffect.Play();
+        }
+
+        if (audioManager != null)
+            audioManager.PlayWallHit();
     }
 
     private string DirectionName(Vector2Int direction)
