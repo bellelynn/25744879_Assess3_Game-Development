@@ -5,6 +5,7 @@ public class PacStudentController : MonoBehaviour
     [SerializeField] private LevelGenerator levelGenerator;
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private ParticleSystem dustEffect;
+    [SerializeField] private ParticleSystem wallBumpEffect;
     [SerializeField] private GameManager gameManager;
     [SerializeField] private float speed = 5f;   // tiles per second
 
@@ -94,14 +95,43 @@ public class PacStudentController : MonoBehaviour
             Mathf.RoundToInt(-transform.position.y));
     }
 
+    // Walking off the left/right edge of a tunnel row wraps to the other side
+    private bool IsTeleport(Vector2Int direction, out Vector3 exitPos)
+    {
+        exitPos = Vector3.zero;
+
+        if (direction.y != 0)
+            return false;
+
+        Vector2Int cell = CurrentCell();
+        int nextColumn = cell.x + direction.x;
+
+        if (nextColumn >= 0 && nextColumn < levelGenerator.Columns)
+            return false;
+
+        int otherColumn = nextColumn < 0 ? levelGenerator.Columns - 1 : 0;
+
+        if (!levelGenerator.IsWalkable(cell.y, otherColumn))
+            return false;
+
+        exitPos = new Vector3(otherColumn, -cell.y, 0f);
+        return true;
+    }
+
     private bool CanMove(Vector2Int direction)
     {
+        if (IsTeleport(direction, out _))
+            return true;
+
         Vector2Int cell = CurrentCell();
         return levelGenerator.IsWalkable(cell.y - direction.y, cell.x + direction.x);
     }
 
     private void StartLerp(Vector2Int direction)
     {
+        if (IsTeleport(direction, out Vector3 exitPos))
+            transform.position = exitPos;
+
         startPos = transform.position;
         targetPos = startPos + new Vector3(direction.x, direction.y, 0f);
         lerpProgress = 0f;
@@ -128,6 +158,7 @@ public class PacStudentController : MonoBehaviour
             return;
 
         isMoving = false;
+        PlayWallBump();
         animator.speed = 0f;
 
         if (audioManager != null)
@@ -135,6 +166,21 @@ public class PacStudentController : MonoBehaviour
 
         if (dustEffect != null)
             dustEffect.Stop();
+    }
+
+    private void PlayWallBump()
+    {
+        // Point of contact: half a tile ahead in the blocked direction
+        Vector3 contact = transform.position + new Vector3(currentInput.x, currentInput.y, 0f) * 0.5f;
+
+        if (wallBumpEffect != null)
+        {
+            wallBumpEffect.transform.position = contact;
+            wallBumpEffect.Play();
+        }
+
+        if (audioManager != null)
+            audioManager.PlayWallHit();
     }
 
     private string DirectionName(Vector2Int direction)
