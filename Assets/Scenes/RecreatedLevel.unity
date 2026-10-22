@@ -68089,6 +68089,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   hud: {fileID: 1793256161}
   audioManager: {fileID: 1313252670}
+  levelGenerator: {fileID: 1776525213}
 --- !u!1 &2019389389
 GameObject:
   m_ObjectHideFlags: 0

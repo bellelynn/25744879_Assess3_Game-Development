@@ -168,6 +168,25 @@ public class PacStudentController : MonoBehaviour
             dustEffect.Stop();
     }
 
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (gameManager.State != GameManager.GameState.Playing)
+            return;
+
+        if (other.CompareTag("Pellet"))
+        {
+            Vector3 p = other.transform.position;
+            levelGenerator.ClearTile(Mathf.RoundToInt(-p.y), Mathf.RoundToInt(p.x));
+            Destroy(other.gameObject);
+            gameManager.EatPellet();
+        }
+        else if (other.CompareTag("Cherry"))
+        {
+            Destroy(other.gameObject);
+            gameManager.EatCherry();
+        }
+    }
+
     private void PlayWallBump()
     {
         // Point of contact: half a tile ahead in the blocked direction
