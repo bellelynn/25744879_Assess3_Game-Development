@@ -145,6 +145,22 @@ public class AudioManager : MonoBehaviour
         movementSource.Play();
     }
 
+    public void PlayMoveLoop(bool eating)
+    {
+        AudioClip clip = eating ? pelletEat : pacStudentMove;
+
+        if (clip == null)
+            return;
+
+        if (movementSource.isPlaying && movementSource.clip == clip)
+            return;
+
+        movementSource.clip = clip;
+        movementSource.volume = movementVolume;
+        movementSource.loop = true;
+        movementSource.Play();
+    }
+
     public void StopMovement()
     {
         movementSource.Stop();
