@@ -18,6 +18,7 @@ public class GhostController : MonoBehaviour
     private Animator animator;
     private LevelGenerator level;
     private GameManager game;
+    private Transform pacStudent;
 
     private string facing = "Right";
     private Vector3 startPosition;
@@ -36,6 +37,10 @@ public class GhostController : MonoBehaviour
     private readonly HashSet<Vector2Int> tunnelCells = new HashSet<Vector2Int>();
     private int centreRow;
 
+    // Ghost 4: clockwise loop along the outside wall
+    private readonly List<Vector2Int> outerLoop = new List<Vector2Int>();
+    private readonly Dictionary<Vector2Int, int> outerLoopIndex = new Dictionary<Vector2Int, int>();
+
     void Awake()
     {
         animator = GetComponent<Animator>();
@@ -46,7 +51,9 @@ public class GhostController : MonoBehaviour
     {
         level = FindAnyObjectByType<LevelGenerator>();
         game = FindAnyObjectByType<GameManager>();
+        pacStudent = FindAnyObjectByType<PacStudentController>().transform;
         BuildMapInfo();
+        BuildOuterLoop();
     }
 
     void Update()
@@ -101,6 +108,52 @@ public class GhostController : MonoBehaviour
 
             for (int column = level.Columns - 1; column >= 0 && level.GetTile(row, column) == 0; column--)
                 tunnelCells.Add(new Vector2Int(column, row));
+        }
+    }
+
+    // Walkable for a ghost that has left the spawn area
+    private bool IsOpenOutside(Vector2Int cell)
+    {
+        int tile = level.GetTile(cell.y, cell.x);
+        return (tile == 0 || tile == 5 || tile == 6)
+            && !tunnelCells.Contains(cell)
+            && !houseCells.Contains(cell);
+    }
+
+    // Left-hand wall follower from the top-left corridor heading right:
+    // keeping the wall on the left traces the outer wall clockwise.
+    private void BuildOuterLoop()
+    {
+        Vector2Int start = new Vector2Int(1, 1);
+        if (!IsOpenOutside(start))
+            return;
+
+        Vector2Int cell = start;
+        Vector2Int dir = Vector2Int.right;
+
+        for (int i = 0; i < 10000; i++)
+        {
+            if (!outerLoopIndex.ContainsKey(cell))
+                outerLoopIndex[cell] = outerLoop.Count;
+            outerLoop.Add(cell);
+
+            Vector2Int left = new Vector2Int(-dir.y, dir.x);
+            Vector2Int right = new Vector2Int(dir.y, -dir.x);
+            Vector2Int[] tries = { left, dir, right, -dir };
+
+            foreach (Vector2Int t in tries)
+            {
+                if (IsOpenOutside(Step(cell, t)))
+                {
+                    dir = t;
+                    break;
+                }
+            }
+
+            cell = Step(cell, dir);
+
+            if (cell == start)
+                break;
         }
     }
 
@@ -196,7 +249,7 @@ public class GhostController : MonoBehaviour
         return vertical;
     }
 
-    // Any valid direction that is not a backstep; backstep only when there is no other choice
+    // Valid directions that are not a backstep; backstep only when there is no other choice
     private Vector2Int ChooseDirection(Vector2Int cell)
     {
         List<Vector2Int> options = new List<Vector2Int>();
@@ -211,7 +264,93 @@ public class GhostController : MonoBehaviour
         if (options.Count == 0)
             return Vector2Int.zero;
 
+        // Scared and recovering ghosts all run away like ghost 1
+        int behaviour = State == GhostState.Normal ? ghostNumber : 1;
+
+        switch (behaviour)
+        {
+            case 1: return ByDistance(cell, options, true);
+            case 2: return ByDistance(cell, options, false);
+            case 4: return FollowOuterWall(cell, options);
+            default: return RandomOf(options);
+        }
+    }
+
+    private static Vector2Int RandomOf(List<Vector2Int> options)
+    {
         return options[Random.Range(0, options.Count)];
+    }
+
+    // Ghost 1: random move that keeps PacStudent further or equal (straight-line distance).
+    // Ghost 2: random move that keeps PacStudent closer or equal.
+    private Vector2Int ByDistance(Vector2Int cell, List<Vector2Int> options, bool away)
+    {
+        Vector2 here = new Vector2(cell.x, -cell.y);
+        Vector2 pac = pacStudent.position;
+        float current = Vector2.Distance(here, pac);
+
+        List<Vector2Int> filtered = new List<Vector2Int>();
+
+        foreach (Vector2Int dir in options)
+        {
+            float next = Vector2.Distance(here + (Vector2)dir, pac);
+
+            if (away ? next >= current : next <= current)
+                filtered.Add(dir);
+        }
+
+        return RandomOf(filtered.Count > 0 ? filtered : options);
+    }
+
+    // Ghost 4: follow the clockwise outer loop; when not on it, take the shortest path to it
+    private Vector2Int FollowOuterWall(Vector2Int cell, List<Vector2Int> options)
+    {
+        if (outerLoop.Count == 0)
+            return RandomOf(options);
+
+        if (outerLoopIndex.TryGetValue(cell, out int index))
+        {
+            Vector2Int next = outerLoop[(index + 1) % outerLoop.Count];
+            Vector2Int dir = new Vector2Int(next.x - cell.x, cell.y - next.y);
+
+            if (options.Contains(dir))
+                return dir;
+        }
+
+        // Breadth-first search to the nearest loop cell (first step must be one of the options)
+        Queue<Vector2Int> queue = new Queue<Vector2Int>();
+        Dictionary<Vector2Int, Vector2Int> firstStep = new Dictionary<Vector2Int, Vector2Int>();
+
+        foreach (Vector2Int dir in options)
+        {
+            Vector2Int next = Step(cell, dir);
+            if (firstStep.ContainsKey(next))
+                continue;
+
+            firstStep[next] = dir;
+            queue.Enqueue(next);
+        }
+
+        while (queue.Count > 0)
+        {
+            Vector2Int current = queue.Dequeue();
+
+            if (outerLoopIndex.ContainsKey(current))
+                return firstStep[current];
+
+            foreach (Vector2Int dir in Directions)
+            {
+                Vector2Int next = Step(current, dir);
+
+                if (next == cell || firstStep.ContainsKey(next) || !IsOpenOutside(next))
+                    continue;
+
+                firstStep[next] = firstStep[current];
+                queue.Enqueue(next);
+            }
+        }
+
+        return RandomOf(options);
     }
 
     private void StartMove(Vector2Int dir)
