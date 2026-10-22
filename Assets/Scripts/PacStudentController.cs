@@ -6,6 +6,7 @@ public class PacStudentController : MonoBehaviour
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private ParticleSystem dustEffect;
     [SerializeField] private ParticleSystem wallBumpEffect;
+    [SerializeField] private ParticleSystem deathEffect;
     [SerializeField] private GameManager gameManager;
     [SerializeField] private float speed = 5f;   // tiles per second
 
@@ -18,6 +19,7 @@ public class PacStudentController : MonoBehaviour
     private Vector3 startPos;
     private Vector3 targetPos;
     private float lerpProgress;
+    private Vector3 spawnPosition;
 
     void Start()
     {
@@ -28,6 +30,7 @@ public class PacStudentController : MonoBehaviour
             Mathf.Round(transform.position.x),
             Mathf.Round(transform.position.y),
             0f);
+        spawnPosition = transform.position;
 
         animator.Play("Right");
         animator.speed = 0f;
@@ -187,11 +190,72 @@ public class PacStudentController : MonoBehaviour
             Destroy(other.gameObject);
             gameManager.EatPowerPellet();
         }
+        else if (other.CompareTag("Ghost"))
+        {
+            GhostController ghost = other.GetComponent<GhostController>();
+
+            if (ghost == null || ghost.State == GhostController.GhostState.Dead)
+                return;
+
+            if (ghost.State == GhostController.GhostState.Normal)
+                gameManager.PacStudentCaught();
+            else
+                gameManager.EatGhost(ghost);
+        }
         else if (other.CompareTag("Cherry"))
         {
             Destroy(other.gameObject);
             gameManager.EatCherry();
         }
+    }
+
+    public void Die()
+    {
+        isLerping = false;
+        isMoving = false;
+
+        animator.speed = 1f;
+        animator.Play("Dead");
+
+        if (dustEffect != null)
+            dustEffect.Stop();
+
+        if (deathEffect != null)
+        {
+            deathEffect.transform.position = transform.position;
+            deathEffect.Play();
+        }
+
+        if (audioManager != null)
+        {
+            audioManager.StopMovement();
+            audioManager.PlayPacStudentDeath();
+        }
+    }
+
+    // Stop everything in place for Game Over
+    public void Freeze()
+    {
+        isLerping = false;
+        isMoving = false;
+        animator.speed = 0f;
+
+        if (dustEffect != null)
+            dustEffect.Stop();
+
+        if (audioManager != null)
+            audioManager.StopMovement();
+    }
+
+    // Back to the top-left start, facing right and waiting for new input
+    public void Respawn()
+    {
+        transform.position = spawnPosition;
+        lastInput = Vector2Int.zero;
+        currentInput = Vector2Int.zero;
+
+        animator.Play("Right");
+        animator.speed = 0f;
     }
 
     private void PlayWallBump()

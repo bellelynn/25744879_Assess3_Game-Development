@@ -36,6 +36,11 @@ public class AudioManager : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float sfxVolume = 0.5f;
 
+    [Header("SFX Lengths (seconds)")]
+    [SerializeField] private float wallHitLength = 0.5f;
+    [SerializeField] private float shortSfxLength = 1f;
+    [SerializeField] private float deathSfxLength = 2f;
+
     [Header("Scene")]
     [SerializeField] private bool isStartScene = false;
 
@@ -141,34 +146,45 @@ public class AudioManager : MonoBehaviour
 
     public void PlayPelletEat()
     {
-        PlaySFX(pelletEat);
+        PlaySFX(pelletEat, shortSfxLength);
     }
 
     public void PlayGhostEat()
     {
-        PlaySFX(ghostEat);
+        PlaySFX(ghostEat, shortSfxLength);
     }
 
     public void PlayBonusEat()
     {
-        PlaySFX(bonusEat);
+        PlaySFX(bonusEat, shortSfxLength);
     }
 
     public void PlayWallHit()
     {
-        PlaySFX(wallHit);
+        PlaySFX(wallHit, wallHitLength);
     }
 
     public void PlayPacStudentDeath()
     {
-        PlaySFX(pacStudentDeath);
+        PlaySFX(pacStudentDeath, deathSfxLength);
     }
 
-    private void PlaySFX(AudioClip clip)
+    // The source clips are long, so each effect plays on its own
+    // temporary AudioSource that is removed after maxLength seconds.
+    private void PlaySFX(AudioClip clip, float maxLength)
     {
         if (clip == null)
             return;
 
-        sfxSource.PlayOneShot(clip, sfxVolume);
+        GameObject sfxObject = new GameObject("SFX_" + clip.name);
+        sfxObject.transform.SetParent(transform);
+
+        AudioSource source = sfxObject.AddComponent<AudioSource>();
+        source.spatialBlend = 0f;
+        source.volume = sfxVolume;
+        source.clip = clip;
+        source.Play();
+
+        Destroy(sfxObject, Mathf.Min(maxLength, clip.length));
     }
 }

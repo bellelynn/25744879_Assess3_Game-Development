@@ -12,10 +12,20 @@ public class GhostController : MonoBehaviour
 
     private Animator animator;
     private string facing = "Right";
+    private Vector3 startPosition;
 
     void Awake()
     {
         animator = GetComponent<Animator>();
+        startPosition = transform.position;
+    }
+
+    // Back to the spawn area in the Normal state (used when PacStudent dies)
+    public void ResetGhost()
+    {
+        transform.position = startPosition;
+        facing = "Right";
+        SetState(GhostState.Normal);
     }
 
     public void SetState(GhostState newState)

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,6 +12,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GhostController[] ghosts;
     [SerializeField] private float scaredDuration = 10f;
     [SerializeField] private float recoveringTime = 3f;
+    [SerializeField] private float deadGhostTime = 3f;
+    [SerializeField] private float deathDuration = 2f;
+    [SerializeField] private PacStudentController pacStudent;
+    [SerializeField] private string levelKey = "L1";      // PlayerPrefs prefix, "L2" for the innovation level
+    [SerializeField] private float gameOverDelay = 3f;
 
     public GameState State { get; private set; } = GameState.Countdown;
 
@@ -104,17 +110,127 @@ public class GameManager : MonoBehaviour
     {
         AddScore(10);
         pelletsLeft--;
+        CheckAllPelletsEaten();
     }
 
     public void EatPowerPellet()
     {
         AddScore(50);
         pelletsLeft--;
+        CheckAllPelletsEaten();
 
         scaredTimer = scaredDuration;
         SetLivingGhosts(GhostController.GhostState.Scared);
         hud.SetScaredTimer(scaredTimer);
         UpdateMusic();
+    }
+
+    public void EatGhost(GhostController ghost)
+    {
+        AddScore(300);
+        ghost.SetState(GhostController.GhostState.Dead);
+        audioManager.PlayGhostEat();
+        UpdateMusic();
+        StartCoroutine(ReviveGhost(ghost));
+    }
+
+    // After 3 seconds a dead ghost takes the state that matches the scared timer
+    private IEnumerator ReviveGhost(GhostController ghost)
+    {
+        yield return new WaitForSeconds(deadGhostTime);
+
+        if (ghost.State != GhostController.GhostState.Dead)
+            yield break;
+
+        if (scaredTimer > recoveringTime)
+            ghost.SetState(GhostController.GhostState.Scared);
+        else if (scaredTimer > 0f)
+            ghost.SetState(GhostController.GhostState.Recovering);
+        else
+            ghost.SetState(GhostController.GhostState.Normal);
+
+        UpdateMusic();
+    }
+
+    public void PacStudentCaught()
+    {
+        if (State != GameState.Playing)
+            return;
+
+        StartCoroutine(DeathSequence());
+    }
+
+    private IEnumerator DeathSequence()
+    {
+        State = GameState.Dying;   // stops movement, timers and collisions
+
+        lives--;
+        hud.SetLives(lives);
+        pacStudent.Die();
+
+        yield return new WaitForSeconds(deathDuration);
+
+        if (lives <= 0)
+        {
+            StartCoroutine(GameOverSequence());
+            yield break;
+        }
+
+        pacStudent.Respawn();
+
+        foreach (GhostController ghost in ghosts)
+            ghost.ResetGhost();
+
+        scaredTimer = 0f;
+        hud.SetScaredTimer(0f);
+        UpdateMusic();
+
+        State = GameState.Playing;
+    }
+
+    private void CheckAllPelletsEaten()
+    {
+        if (pelletsLeft <= 0)
+            StartCoroutine(GameOverSequence());
+    }
+
+    private IEnumerator GameOverSequence()
+    {
+        if (State == GameState.GameOver)
+            yield break;
+
+        State = GameState.GameOver;   // stops player/ghost movement and the game timer
+
+        pacStudent.Freeze();
+        hud.SetButtonsInteractable(false);
+        hud.ShowCenter("Game Over");
+
+        SaveHighScore();
+
+        yield return new WaitForSeconds(gameOverDelay);
+        SceneManager.LoadScene("StartScene");
+    }
+
+    // Save when the score beats the record, or ties it with a faster time
+    private void SaveHighScore()
+    {
+        string scoreKey = levelKey + "_HighScore";
+        string timeKey = levelKey + "_BestTime";
+
+        bool hasRecord = PlayerPrefs.HasKey(scoreKey);
+        int bestScore = PlayerPrefs.GetInt(scoreKey, 0);
+        float bestTime = PlayerPrefs.GetFloat(timeKey, 0f);
+
+        bool newRecord = !hasRecord
+            || score > bestScore
+            || (score == bestScore && gameTime < bestTime);
+
+        if (!newRecord)
+            return;
+
+        PlayerPrefs.SetInt(scoreKey, score);
+        PlayerPrefs.SetFloat(timeKey, gameTime);
+        PlayerPrefs.Save();
     }
 
     public void EatCherry()
