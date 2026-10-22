@@ -41,6 +41,11 @@ public class LevelGenerator : MonoBehaviour
         {0,0,0,0,0,0,5,0,0,0,4,0,0,0}
     };
 
+    void Awake()
+    {
+        BuildFullMap();
+    }
+
     void Start()
     {
         //Remove manual level in Play mode
@@ -56,7 +61,6 @@ public class LevelGenerator : MonoBehaviour
         generatedLevel.transform.rotation = Quaternion.identity;
         generatedLevel.transform.localScale = Vector3.one;
 
-        BuildFullMap();
         GenerateFullLevel();
         FitCameraToLevel();
     }
@@ -711,5 +715,31 @@ public class LevelGenerator : MonoBehaviour
                 halfHeight,
                 sizeFromWidth
             );
+    }
+
+    public int Rows => fullMap.GetLength(0);
+    public int Columns => fullMap.GetLength(1);
+
+    //Grid [row, column] is placed at world (column, -row)
+    public int GetTile(int row, int column)
+    {
+        if (row < 0 || row >= Rows || column < 0 || column >= Columns)
+            return -1;
+
+        return fullMap[row, column];
+    }
+
+    public bool IsWalkable(int row, int column)
+    {
+        int tile = GetTile(row, column);
+        return tile == 0 || tile == 5 || tile == 6;
+    }
+
+    public void ClearTile(int row, int column)
+    {
+        int tile = GetTile(row, column);
+
+        if (tile == 5 || tile == 6)
+            fullMap[row, column] = 0;
     }
 }
