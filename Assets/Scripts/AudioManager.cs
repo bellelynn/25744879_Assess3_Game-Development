@@ -85,6 +85,11 @@ public class AudioManager : MonoBehaviour
         PlayMusic(startScene, introVolume);
     }
 
+    public void StopMusic()
+    {
+        musicSource.Stop();
+    }
+
     public void PlayGhostNormal()
     {
         PlayMusic(ghostNormal, normalVolume);

@@ -12,7 +12,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GhostController[] ghosts;
     [SerializeField] private float scaredDuration = 10f;
     [SerializeField] private float recoveringTime = 3f;
-    [SerializeField] private float deadGhostTime = 3f;
     [SerializeField] private float deathDuration = 2f;
     [SerializeField] private PacStudentController pacStudent;
     [SerializeField] private string levelKey = "L1";      // PlayerPrefs prefix, "L2" for the innovation level
@@ -131,17 +130,11 @@ public class GameManager : MonoBehaviour
         ghost.SetState(GhostController.GhostState.Dead);
         audioManager.PlayGhostEat();
         UpdateMusic();
-        StartCoroutine(ReviveGhost(ghost));
     }
 
-    // After 3 seconds a dead ghost takes the state that matches the scared timer
-    private IEnumerator ReviveGhost(GhostController ghost)
+    // A dead ghost that reaches its spawn point takes the state that matches the scared timer
+    public void GhostReturnedHome(GhostController ghost)
     {
-        yield return new WaitForSeconds(deadGhostTime);
-
-        if (ghost.State != GhostController.GhostState.Dead)
-            yield break;
-
         if (scaredTimer > recoveringTime)
             ghost.SetState(GhostController.GhostState.Scared);
         else if (scaredTimer > 0f)
@@ -166,6 +159,7 @@ public class GameManager : MonoBehaviour
 
         lives--;
         hud.SetLives(lives);
+        audioManager.StopMusic();   // let the death sound play on its own
         pacStudent.Die();
 
         yield return new WaitForSeconds(deathDuration);
@@ -202,6 +196,7 @@ public class GameManager : MonoBehaviour
         State = GameState.GameOver;   // stops player/ghost movement and the game timer
 
         pacStudent.Freeze();
+        audioManager.StopMusic();
         hud.SetButtonsInteractable(false);
         hud.ShowCenter("Game Over");
 

@@ -7,7 +7,8 @@ public class GhostController : MonoBehaviour
 
     [SerializeField] private int ghostNumber = 1;
     [SerializeField] private string colourName = "Blue";   // matches the animator state names, e.g. Blue_Right
-    [SerializeField] private float speed = 4.5f;            // tiles per second
+    [SerializeField] private float normalSpeed = 4.5f;      // 90% of PacStudent (5 tiles/s)
+    [SerializeField] private float slowSpeed = 2.25f;       // scared, recovering and dead: 50% of normal
 
     public GhostState State { get; private set; } = GhostState.Normal;
     public int GhostNumber => ghostNumber;
@@ -29,6 +30,9 @@ public class GhostController : MonoBehaviour
     private Vector3 toPos;
     private float lerpProgress;
     private Vector2Int moveDir = Vector2Int.zero;
+    private bool returningHome;
+
+    private float CurrentSpeed => State == GhostState.Normal ? normalSpeed : slowSpeed;
 
     // Spawn area
     private bool hasLeftHouse;
@@ -60,6 +64,12 @@ public class GhostController : MonoBehaviour
     {
         if (game.State != GameManager.GameState.Playing)
             return;
+
+        if (State == GhostState.Dead)
+        {
+            ReturnHome();
+            return;
+        }
 
         if (isLerping)
             ContinueLerp();
@@ -192,7 +202,7 @@ public class GhostController : MonoBehaviour
 
     private void ContinueLerp()
     {
-        lerpProgress += speed * Time.deltaTime;
+        lerpProgress += CurrentSpeed * Time.deltaTime;
 
         if (lerpProgress >= 1f)
         {
@@ -203,6 +213,34 @@ public class GhostController : MonoBehaviour
         {
             transform.position = Vector3.Lerp(fromPos, toPos, lerpProgress);
         }
+    }
+
+    // Dead ghosts fly straight back to their spawn point, through walls, at a constant speed
+    private void ReturnHome()
+    {
+        if (!returningHome)
+        {
+            returningHome = true;
+            fromPos = transform.position;
+            toPos = startPosition;
+            lerpProgress = 0f;
+        }
+
+        float distance = Vector3.Distance(fromPos, toPos);
+        lerpProgress += distance > 0f ? slowSpeed * Time.deltaTime / distance : 1f;
+
+        if (lerpProgress < 1f)
+        {
+            transform.position = Vector3.Lerp(fromPos, toPos, lerpProgress);
+            return;
+        }
+
+        transform.position = toPos;
+        returningHome = false;
+        isLerping = false;
+        moveDir = Vector2Int.zero;
+        hasLeftHouse = false;
+        game.GhostReturnedHome(this);
     }
 
     private void ChooseNextMove()
@@ -379,6 +417,7 @@ public class GhostController : MonoBehaviour
     {
         transform.position = startPosition;
         isLerping = false;
+        returningHome = false;
         moveDir = Vector2Int.zero;
         hasLeftHouse = false;
         facing = "Right";
@@ -387,6 +426,12 @@ public class GhostController : MonoBehaviour
 
     public void SetState(GhostState newState)
     {
+        if (newState == GhostState.Dead)
+        {
+            isLerping = false;          // stop the grid move and head home instead
+            returningHome = false;
+        }
+
         State = newState;
         PlayAnimation();
     }
