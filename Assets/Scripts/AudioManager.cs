@@ -43,8 +43,6 @@ public class AudioManager : MonoBehaviour
     private AudioSource movementSource;
     private AudioSource sfxSource;
 
-    private float introTimer;
-    private bool introFinished;
 
     void Awake()
     {
@@ -64,42 +62,17 @@ public class AudioManager : MonoBehaviour
         {
             PlayStartScene();
         }
-        else
-        {
-            PlayIntro();
-        }
     }
 
-    void Update()
-    {
-        //Intro music plays for 3 seconds
-        if (!isStartScene && !introFinished)
-        {
-            introTimer += Time.deltaTime;
-
-            if (!musicSource.isPlaying || introTimer >= 3f)
-            {
-                introFinished = true;
-                PlayGhostNormal();
-            }
-        }
-    }
-
-    private void PlayIntro()
+    public void PlayIntro()
     {
         if (intro == null)
-        {
-            introFinished = true;
-            PlayGhostNormal();
             return;
-        }
 
         musicSource.clip = intro;
         musicSource.volume = introVolume;
         musicSource.loop = false;
         musicSource.Play();
-
-        introTimer = 0f;
     }
 
     public void PlayStartScene()

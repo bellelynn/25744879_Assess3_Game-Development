@@ -5,6 +5,7 @@ public class PacStudentController : MonoBehaviour
     [SerializeField] private LevelGenerator levelGenerator;
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private ParticleSystem dustEffect;
+    [SerializeField] private GameManager gameManager;
     [SerializeField] private float speed = 5f;   // tiles per second
 
     private Vector2Int lastInput = Vector2Int.zero;
@@ -33,6 +34,9 @@ public class PacStudentController : MonoBehaviour
 
     void Update()
     {
+        if (gameManager.State != GameManager.GameState.Playing)
+            return; 
+            
         ReadInput();
 
         if (isLerping)
