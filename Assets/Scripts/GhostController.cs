@@ -12,6 +12,10 @@ public class GhostController : MonoBehaviour
 
     public GhostState State { get; private set; } = GhostState.Normal;
     public int GhostNumber => ghostNumber;
+    public bool HasLeftHouse => hasLeftHouse;
+    public bool IsRunner { get; private set; }
+
+    private RuntimeAnimatorController ghostAnimator;
 
     private static readonly Vector2Int[] Directions =
         { Vector2Int.up, Vector2Int.left, Vector2Int.down, Vector2Int.right };
@@ -32,7 +36,7 @@ public class GhostController : MonoBehaviour
     private Vector2Int moveDir = Vector2Int.zero;
     private bool returningHome;
 
-    private float CurrentSpeed => State == GhostState.Normal ? normalSpeed : slowSpeed;
+    private float CurrentSpeed => (State == GhostState.Normal || IsRunner) ? normalSpeed : slowSpeed;
 
     // Spawn area
     private bool hasLeftHouse;
@@ -48,6 +52,7 @@ public class GhostController : MonoBehaviour
     void Awake()
     {
         animator = GetComponent<Animator>();
+        ghostAnimator = animator.runtimeAnimatorController;
         startPosition = transform.position;
     }
 
@@ -302,8 +307,8 @@ public class GhostController : MonoBehaviour
         if (options.Count == 0)
             return Vector2Int.zero;
 
-        // Scared and recovering ghosts all run away like ghost 1
-        int behaviour = State == GhostState.Normal ? ghostNumber : 1;
+        // Scared, recovering and runner ghosts all run away like ghost 1
+        int behaviour = (State == GhostState.Normal && !IsRunner) ? ghostNumber : 1;
 
         switch (behaviour)
         {
@@ -424,6 +429,14 @@ public class GhostController : MonoBehaviour
         SetState(GhostState.Normal);
     }
 
+    // Role swap: this ghost becomes the AI-controlled PacStudent (or turns back)
+    public void SetRunner(bool runner, RuntimeAnimatorController pacAnimator)
+    {
+        IsRunner = runner;
+        animator.runtimeAnimatorController = runner ? pacAnimator : ghostAnimator;
+        PlayAnimation();
+    }
+
     public void SetState(GhostState newState)
     {
         if (newState == GhostState.Dead)
@@ -444,6 +457,12 @@ public class GhostController : MonoBehaviour
 
     private void PlayAnimation()
     {
+        if (IsRunner)
+        {
+            animator.Play(facing);      // PacStudent animator: Up / Down / Left / Right
+            return;
+        }
+
         switch (State)
         {
             case GhostState.Normal:
