@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Dead music if any ghost is dead, otherwise scared music while the timer runs, otherwise normal
-    private void UpdateMusic()
+    public void UpdateMusic()
     {
         foreach (GhostController ghost in ghosts)
             if (ghost.State == GhostController.GhostState.Dead)
