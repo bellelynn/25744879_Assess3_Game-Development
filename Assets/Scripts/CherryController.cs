@@ -31,14 +31,20 @@ public class CherryController : MonoBehaviour
             -(levelGenerator.Rows - 1) / 2f,
             0f);
 
-        // Start just outside the camera view, at a random angle around the centre
+        // Start just outside the level map, at a random angle around the centre
+        float levelRadius = Mathf.Sqrt(levelGenerator.Columns * levelGenerator.Columns
+                                       + levelGenerator.Rows * levelGenerator.Rows) / 2f + 1f;
+
+        // Finish on the opposite side, beyond the camera view
         float halfHeight = cam.orthographicSize;
         float halfWidth = halfHeight * cam.aspect;
-        float radius = Mathf.Sqrt(halfWidth * halfWidth + halfHeight * halfHeight) + 1f;
-        float angle = Random.Range(0f, Mathf.PI * 2f);
+        float viewRadius = Mathf.Sqrt(halfWidth * halfWidth + halfHeight * halfHeight) + 1f;
 
-        Vector3 start = centre + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * radius;
-        Vector3 end = centre * 2f - start;   // opposite side, passing through the centre
+        float angle = Random.Range(0f, Mathf.PI * 2f);
+        Vector3 direction = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f);
+
+        Vector3 start = centre + direction * levelRadius;
+        Vector3 end = centre - direction * Mathf.Max(viewRadius, levelRadius);   // passes through the centre
 
         GameObject cherry = Instantiate(cherryPrefab, start, Quaternion.identity);
 

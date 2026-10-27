@@ -360,9 +360,12 @@ public class GhostController : MonoBehaviour
                 return dir;
         }
 
-        // Breadth-first search to the nearest loop cell (first step must be one of the options)
+        // Breadth-first search to the nearest loop cell that is entered in the clockwise
+        // direction (arriving from its loop predecessor), so the ghost never keeps going
+        // anticlockwise. The first step must be one of the options (no backstep).
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
         Dictionary<Vector2Int, Vector2Int> firstStep = new Dictionary<Vector2Int, Vector2Int>();
+        Dictionary<Vector2Int, Vector2Int> parent = new Dictionary<Vector2Int, Vector2Int>();
 
         foreach (Vector2Int dir in options)
         {
@@ -371,15 +374,26 @@ public class GhostController : MonoBehaviour
                 continue;
 
             firstStep[next] = dir;
+            parent[next] = cell;
             queue.Enqueue(next);
         }
+
+        Vector2Int fallback = Vector2Int.zero;
 
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
 
-            if (outerLoopIndex.ContainsKey(current))
-                return firstStep[current];
+            if (outerLoopIndex.TryGetValue(current, out int loopIndex))
+            {
+                Vector2Int previous = outerLoop[(loopIndex - 1 + outerLoop.Count) % outerLoop.Count];
+
+                if (parent[current] == previous)
+                    return firstStep[current];
+
+                if (fallback == Vector2Int.zero)
+                    fallback = firstStep[current];
+            }
 
             foreach (Vector2Int dir in Directions)
             {
@@ -389,11 +403,12 @@ public class GhostController : MonoBehaviour
                     continue;
 
                 firstStep[next] = firstStep[current];
+                parent[next] = current;
                 queue.Enqueue(next);
             }
         }
 
-        return RandomOf(options);
+        return fallback != Vector2Int.zero ? fallback : RandomOf(options);
     }
 
     private void StartMove(Vector2Int dir)
