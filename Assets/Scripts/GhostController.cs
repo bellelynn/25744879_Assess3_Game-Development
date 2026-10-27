@@ -12,6 +12,10 @@ public class GhostController : MonoBehaviour
 
     public GhostState State { get; private set; } = GhostState.Normal;
     public int GhostNumber => ghostNumber;
+    public bool HasLeftHouse => hasLeftHouse;
+    public bool IsRunner { get; private set; }
+
+    private RuntimeAnimatorController ghostAnimator;
 
     private static readonly Vector2Int[] Directions =
         { Vector2Int.up, Vector2Int.left, Vector2Int.down, Vector2Int.right };
@@ -32,7 +36,7 @@ public class GhostController : MonoBehaviour
     private Vector2Int moveDir = Vector2Int.zero;
     private bool returningHome;
 
-    private float CurrentSpeed => State == GhostState.Normal ? normalSpeed : slowSpeed;
+    private float CurrentSpeed => (State == GhostState.Normal || IsRunner) ? normalSpeed : slowSpeed;
 
     // Spawn area
     private bool hasLeftHouse;
@@ -48,6 +52,7 @@ public class GhostController : MonoBehaviour
     void Awake()
     {
         animator = GetComponent<Animator>();
+        ghostAnimator = animator.runtimeAnimatorController;
         startPosition = transform.position;
     }
 
@@ -302,8 +307,8 @@ public class GhostController : MonoBehaviour
         if (options.Count == 0)
             return Vector2Int.zero;
 
-        // Scared and recovering ghosts all run away like ghost 1
-        int behaviour = State == GhostState.Normal ? ghostNumber : 1;
+        // Scared, recovering and runner ghosts all run away like ghost 1
+        int behaviour = (State == GhostState.Normal && !IsRunner) ? ghostNumber : 1;
 
         switch (behaviour)
         {
@@ -355,9 +360,12 @@ public class GhostController : MonoBehaviour
                 return dir;
         }
 
-        // Breadth-first search to the nearest loop cell (first step must be one of the options)
+        // Breadth-first search to the nearest loop cell that is entered in the clockwise
+        // direction (arriving from its loop predecessor), so the ghost never keeps going
+        // anticlockwise. The first step must be one of the options (no backstep).
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
         Dictionary<Vector2Int, Vector2Int> firstStep = new Dictionary<Vector2Int, Vector2Int>();
+        Dictionary<Vector2Int, Vector2Int> parent = new Dictionary<Vector2Int, Vector2Int>();
 
         foreach (Vector2Int dir in options)
         {
@@ -366,15 +374,26 @@ public class GhostController : MonoBehaviour
                 continue;
 
             firstStep[next] = dir;
+            parent[next] = cell;
             queue.Enqueue(next);
         }
+
+        Vector2Int fallback = Vector2Int.zero;
 
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
 
-            if (outerLoopIndex.ContainsKey(current))
-                return firstStep[current];
+            if (outerLoopIndex.TryGetValue(current, out int loopIndex))
+            {
+                Vector2Int previous = outerLoop[(loopIndex - 1 + outerLoop.Count) % outerLoop.Count];
+
+                if (parent[current] == previous)
+                    return firstStep[current];
+
+                if (fallback == Vector2Int.zero)
+                    fallback = firstStep[current];
+            }
 
             foreach (Vector2Int dir in Directions)
             {
@@ -384,11 +403,12 @@ public class GhostController : MonoBehaviour
                     continue;
 
                 firstStep[next] = firstStep[current];
+                parent[next] = current;
                 queue.Enqueue(next);
             }
         }
 
-        return RandomOf(options);
+        return fallback != Vector2Int.zero ? fallback : RandomOf(options);
     }
 
     private void StartMove(Vector2Int dir)
@@ -424,6 +444,14 @@ public class GhostController : MonoBehaviour
         SetState(GhostState.Normal);
     }
 
+    // Role swap: this ghost becomes the AI-controlled PacStudent (or turns back)
+    public void SetRunner(bool runner, RuntimeAnimatorController pacAnimator)
+    {
+        IsRunner = runner;
+        animator.runtimeAnimatorController = runner ? pacAnimator : ghostAnimator;
+        PlayAnimation();
+    }
+
     public void SetState(GhostState newState)
     {
         if (newState == GhostState.Dead)
@@ -444,6 +472,12 @@ public class GhostController : MonoBehaviour
 
     private void PlayAnimation()
     {
+        if (IsRunner)
+        {
+            animator.Play(facing);      // PacStudent animator: Up / Down / Left / Right
+            return;
+        }
+
         switch (State)
         {
             case GhostState.Normal:

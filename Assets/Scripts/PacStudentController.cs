@@ -21,6 +21,10 @@ public class PacStudentController : MonoBehaviour
     private float lerpProgress;
     private Vector3 spawnPosition;
 
+    // Innovation level only: role swap (null in Level 1)
+    private RoleSwapController roleSwap;
+    private string animPrefix = "";
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -31,6 +35,7 @@ public class PacStudentController : MonoBehaviour
             Mathf.Round(transform.position.y),
             0f);
         spawnPosition = transform.position;
+        roleSwap = FindAnyObjectByType<RoleSwapController>();
 
         animator.Play("Right");
         animator.speed = 0f;
@@ -142,7 +147,7 @@ public class PacStudentController : MonoBehaviour
         isMoving = true;
 
         animator.speed = 1f;
-        animator.Play(DirectionName(direction));
+        animator.Play(animPrefix + DirectionName(direction));
 
         Vector2Int cell = CurrentCell();
         int nextTile = levelGenerator.GetTile(cell.y - direction.y, cell.x + direction.x);
@@ -176,6 +181,25 @@ public class PacStudentController : MonoBehaviour
         if (gameManager.State != GameManager.GameState.Playing)
             return;
 
+        if (other.CompareTag("SwapToken"))
+        {
+            if (roleSwap != null)
+                roleSwap.TokenCollected(other.gameObject);
+            return;
+        }
+
+        // While swapped, the player is a ghost: it only chases the AI PacStudent
+        if (roleSwap != null && roleSwap.IsSwapped)
+        {
+            if (other.CompareTag("Ghost"))
+            {
+                GhostController ghost = other.GetComponent<GhostController>();
+                if (ghost != null && ghost.IsRunner)
+                    roleSwap.RunnerCaught();
+            }
+            return;
+        }
+
         if (other.CompareTag("Pellet"))
         {
             Vector3 p = other.transform.position;
@@ -207,6 +231,15 @@ public class PacStudentController : MonoBehaviour
             Destroy(other.gameObject);
             gameManager.EatCherry();
         }
+    }
+
+    // Switch between the PacStudent look and a ghost look (role swap)
+    public void SetForm(RuntimeAnimatorController controller, string prefix)
+    {
+        animator.runtimeAnimatorController = controller;
+        animPrefix = prefix;
+        animator.Play(animPrefix + "Right");
+        animator.speed = isMoving ? 1f : 0f;
     }
 
     public void Die()
